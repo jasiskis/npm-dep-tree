@@ -1,0 +1,14 @@
+/RUNNING_PID
+/logs/
+/project/*-shim.sbt
+/project/project/
+/project/build.project
+/project/target/
+/target/
+/metastore_db/
+/.idea/
+*log
+.DS_Store
+/.bloop
+/.metals
+/.sbt-hydra-history
