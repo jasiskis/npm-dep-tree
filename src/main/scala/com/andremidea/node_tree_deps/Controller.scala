@@ -17,17 +17,7 @@ object Controller extends LazyLogging {
                         packageRepository: PackageRepository,
                         httpOut: HttpOut): DependencyNode = {
     val pack = PackageVersion(name, version)
-
-    val withDeps = packageRepository.retrieveConnectedPackages(pack)
-    logger.debug(s"retrieved package ${pack} from repository ${withDeps}")
-
-    withDeps match {
-      case Some(x) if x.allDependenciesFetched => Adapters.toWire(x)
-      case _ => {
-        fetchDepencencyTree(pack, storage, packageRepository, httpOut)
-        Adapters.toWire(packageRepository.retrieveConnectedPackages(pack).get)
-      }
-    }
+    Adapters.toWire(fetchDepencencyTree(pack, storage, packageRepository, httpOut))
   }
 
   private def fetchDepencencyTree(pack: PackageVersion,
@@ -35,41 +25,37 @@ object Controller extends LazyLogging {
                                   packageRepository: PackageRepository,
                                   httpOut: HttpOut): PackageWithDeps = {
 
-    val fetched = getOrFetch(pack.toWithDeps(false), storage, packageRepository, httpOut)
+    val withDeps = packageRepository.retrieveConnectedPackages(pack)
+    logger.debug(s"retrieved package ${pack} from repository ${withDeps}")
 
-    if (fetched.allDependenciesFetched) {
-      fetched
-    } else {
-      val bla = fetched.dependencies
-        .filterNot(_.allDependenciesFetched)
-        .map(x => fetchDepencencyTree(x.toPackageVersion, storage, packageRepository, httpOut))
-      fetched.copy(dependencies = bla)
-    }
-  }
-
-  def getOrFetch(packWithDeps: PackageWithDeps,
-                 storage: GraphStore[PackageVersion],
-                 packageRepository: PackageRepository,
-                 httpOut: HttpOut): PackageWithDeps = {
-    packWithDeps.allDependenciesFetched match {
-      case true => packWithDeps
+    withDeps match {
+      case Some(x) if x.allDependenciesFetched => x
       case _ => {
-        val pack = fetch(packWithDeps, httpOut)
-        if (packWithDeps.version == "latest") {
-          // insert duplicated to work around "caching" when searching for a non
-          // exact version. Ideally the "latest" would have a expiration
-          storage.upsert(pack.copy(version = "latest").toPackageVersion, pack.dependencies.map(_.toPackageVersion))
-          storage.upsert(pack.toPackageVersion, pack.dependencies.map(_.toPackageVersion))
-        } else
-          storage.upsert(pack.toPackageVersion, pack.dependencies.map(_.toPackageVersion))
+        val fetched = fetch(pack.toWithDeps(false), storage, httpOut)
+        val fetchedDependencies = fetched.dependencies
+          .map(
+            dep =>
+              if (dep.allDependenciesFetched) dep
+              else fetchDepencencyTree(dep.toPackageVersion, storage, packageRepository, httpOut))
 
-        pack
+        fetched.copy(dependencies = fetchedDependencies)
       }
     }
   }
 
-  def fetch(pack: PackageWithDeps, httpOut: HttpOut): PackageWithDeps = {
-    logger.info(s"Fetching package: ${pack}")
+  def fetch(packWithDeps: PackageWithDeps, storage: GraphStore[PackageVersion], httpOut: HttpOut): PackageWithDeps = {
+    val pack = fetchHttp(packWithDeps, httpOut)
+    if (packWithDeps.version == "latest")
+      // insert duplicated to work around "caching" when searching for a non
+      // exact version. Ideally the "latest" would have a expiration
+      storage.upsert(pack.copy(version = "latest").toPackageVersion, pack.dependencies.map(_.toPackageVersion))
+
+    storage.upsert(pack.toPackageVersion, pack.dependencies.map(_.toPackageVersion))
+    pack
+  }
+
+  def fetchHttp(pack: PackageWithDeps, httpOut: HttpOut): PackageWithDeps = {
+    logger.info(s"http-out fetching package: ${pack}")
     val x: Future[Either[Exception, schemata.RegistryPackageVersion]] =
       httpOut.getPackage(pack.name, pack.version).value
 

@@ -16,8 +16,6 @@ case class InMemoryGraph() extends PackageRepository with GraphStore[PackageVers
   override def retrieveConnectedPackages(key: PackageVersion): Option[PackageWithDeps] = {
     val node = Node(key)(false)
     graph.find(node).map { n =>
-      val successors: Set[graph.NodeT] = n.diSuccessors
-
       def getSuccessors(node: graph.NodeT): PackageWithDeps = {
         val nodeValue = node.value
         if (node.hasSuccessors) {
