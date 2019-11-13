@@ -180,4 +180,6 @@ Unfortunately given the time constraint, I eagerly evaluated finagle's `Future` 
 - [ ] Fetch dependencies in parallel
 - [ ] `Controller.fetchDependencies` returning a future to the endpoint
 - [ ] Add retry logic to the `HttpOut` in case of retriable errors.
+- [ ] Improve relative versions, possibly fetching all versions from a package and deciding the best one
+- [ ] Expire `latest` nodes, as new versions might be available
 
