@@ -18,7 +18,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
       "Fast, unopinionated, minimalist web framework",
       "4.17.1",
       "http://expressjs.com/",
-      VersionRepository("git+https://github.com/expressjs/express.git", "git"),
+      VersionRepository("git+https://github.com/expressjs/express.git", Some("git")),
       Map(
         "body-parser"         -> "1.19.0",
         "etag"                -> "~1.8.1",
@@ -79,7 +79,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
         "lint"     -> "eslint ."
       ),
       Some(VersionAuthor("TJ Holowaychuk", Some("tj@vision-media.ca"), None)),
-      "MIT",
+      Some("MIT"),
       "express@4.17.1",
       VersionDist(
         "4491fc38605cf51f8629d39c2b5d026f98a4c134",
@@ -106,7 +106,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
       "HTTP response freshness testing",
       "0.5.2",
       "https://github.com/jshttp/fresh#readme",
-      VersionRepository("git+https://github.com/jshttp/fresh.git", "git"),
+      VersionRepository("git+https://github.com/jshttp/fresh.git", Some("git")),
       Map.empty,
       Map(
         "eslint-plugin-promise"  -> "3.5.0",
@@ -129,7 +129,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
         "bench"       -> "node benchmark/index.js"
       ),
       Some(VersionAuthor("TJ Holowaychuk", Some("tj@vision-media.ca"), Some("http://tjholowaychuk.com"))),
-      "MIT",
+      Some("MIT"),
       "fresh@0.5.2",
       VersionDist(
         "3d8cadd90d976569fa835ab1f8e4b23a105605a7",
@@ -151,7 +151,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
       "Node.js body parsing middleware",
       "1.19.0",
       "https://github.com/expressjs/body-parser#readme",
-      VersionRepository("git+https://github.com/expressjs/body-parser.git", "git"),
+      VersionRepository("git+https://github.com/expressjs/body-parser.git", Some("git")),
       Map(
         "depd"         -> "~1.1.2",
         "raw-body"     -> "2.4.0",
@@ -185,7 +185,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
         "test-travis" -> "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --require test/support/env --reporter spec --check-leaks test/"
       ),
       None,
-      "MIT",
+      Some("MIT"),
       "body-parser@1.19.0",
       VersionDist(
         "96b2709e57c9c4e09a6fd66a8fd979844f69f08a",

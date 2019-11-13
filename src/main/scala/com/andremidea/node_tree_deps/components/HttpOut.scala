@@ -8,7 +8,6 @@ import com.twitter.util.{Await, Future, Try}
 import io.catbird.util._
 import io.circe.parser._
 
-
 case class HttpOut(httpService: Service[Request, Response]) {
 
   def getPackage(name: String, version: String): EitherT[Future, Exception, RegistryPackageVersion] = {
@@ -25,17 +24,19 @@ case class HttpOut(httpService: Service[Request, Response]) {
       okResp <- EitherT.fromEither[Future](
         resp.status match {
           case Status.Successful(x) => Right(resp)
-          case _ => Left(new Exception(s"Bad Response status: ${resp.statusCode} body: ${resp.getContentString()}"))
+          case _                    => Left(new Exception(s"Bad Response status: ${resp.statusCode} body: ${resp.getContentString()}"))
         }
       )
-      body <- EitherT.fromEither[Future](parse(okResp.getContentString()))
-          .leftMap(failure => {
-            new Exception("Failed to parse response to JSON")
-          })
-      parsed <- EitherT.fromEither[Future](body.as[RegistryPackageVersion])
-          .leftMap(failure => {
-            new Exception(s"Failed to parse JSON to expected representation: ${failure}")
-          })
+      body <- EitherT
+        .fromEither[Future](parse(okResp.getContentString()))
+        .leftMap(failure => {
+          new Exception("Failed to parse response to JSON")
+        })
+      parsed <- EitherT
+        .fromEither[Future](body.as[RegistryPackageVersion])
+        .leftMap(failure => {
+          new Exception(s"Failed to parse JSON to expected representation: ${failure}")
+        })
     } yield parsed
   }
 }

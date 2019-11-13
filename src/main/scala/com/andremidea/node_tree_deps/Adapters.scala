@@ -7,12 +7,14 @@ import com.twitter.util.Future
 
 object Adapters {
   def fromWire(pack: schemata.RegistryPackageVersion): PackageWithDeps = {
-    val deps = pack.dependencies.map{case (name: String, version: String) => PackageWithDeps(name, defineVersion(version), false)}.toSet
+    val deps = pack.dependencies.map {
+      case (name: String, version: String) => PackageWithDeps(name, defineVersion(version), false)
+    }.toSet
     PackageWithDeps(pack.name, defineVersion(pack.version), true, dependencies = deps)
   }
 
   def defineVersion(version: String): String = {
-    if(Seq(">=", ">", "|", " - ", "<", "<=").forall(!version.contains(_)))
+    if (Seq(">=", ">", "|", " - ", "<", "<=").forall(!version.contains(_)))
       version.replace("^", "").replace("~", "")
     else
       "latest"

@@ -19,12 +19,15 @@ case class InMemoryGraph() extends PackageRepository with GraphStore[PackageVers
       def getSuccessors(node: graph.NodeT): PackageWithDeps = {
         val nodeValue = node.value
         if (node.hasSuccessors) {
-          PackageWithDeps(nodeValue.content.name, nodeValue.content.version, nodeValue.dependenciesFetched, node.diSuccessors.map(getSuccessors(_)))
+          PackageWithDeps(nodeValue.content.name,
+                          nodeValue.content.version,
+                          nodeValue.dependenciesFetched,
+                          node.diSuccessors.map(getSuccessors(_)))
         } else {
           PackageWithDeps(nodeValue.content.name, nodeValue.content.version, nodeValue.dependenciesFetched)
         }
       }
-      
+
       getSuccessors(n)
     }
   }

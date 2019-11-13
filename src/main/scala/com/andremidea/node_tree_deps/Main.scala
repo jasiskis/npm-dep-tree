@@ -13,8 +13,8 @@ import io.circe.generic.auto._
 
 object Main extends TwitterServer {
 
-  val inMemoryGraph  = InMemoryGraph()
-  val httpOut = HttpOut(Http.client.withTls("registry.npmjs.org").newService(s"registry.npmjs.org:443"))
+  val inMemoryGraph = InMemoryGraph()
+  val httpOut       = HttpOut(Http.client.withTls("registry.npmjs.org").newService(s"registry.npmjs.org:443"))
 
   val getTree: Endpoint[DependencyNode] =
     get("tree" :: path[String] :: path[String]) { (name: String, version: String) =>

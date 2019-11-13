@@ -18,15 +18,15 @@ class HttpOutTest extends FlatSpec with Matchers with MockFactory with EitherVal
       "Fast, unopinionated, minimalist web framework",
       "4.17.1",
       "http://expressjs.com/",
-      VersionRepository("git+https://github.com/expressjs/express.git", "git"),
+      VersionRepository("git+https://github.com/expressjs/express.git", Some("git")),
       Map(
         "body-parser" -> "1.19.0",
-        "etag"        -> "~1.8.1",
+        "etag"        -> "~1.8.1"
       ),
       Map.empty,
       Map.empty,
       Some(VersionAuthor("TJ Holowaychuk", Some("tj@vision-media.ca"), None)),
-      "MIT",
+      Some("MIT"),
       "express@4.17.1",
       VersionDist(
         "4491fc38605cf51f8629d39c2b5d026f98a4c134",
@@ -90,6 +90,7 @@ class HttpOutTest extends FlatSpec with Matchers with MockFactory with EitherVal
 
     val result = Await.result(HttpOut(serviceMock).getPackage("express", "latest").value)
 
-    result.left.value.getMessage should be("Failed to parse JSON to expected representation: DecodingFailure(Attempt to decode value on failed cursor, List(DownField(name)))")
+    result.left.value.getMessage should be(
+      "Failed to parse JSON to expected representation: DecodingFailure(Attempt to decode value on failed cursor, List(DownField(name)))")
   }
 }

@@ -12,7 +12,11 @@ object models {
     }
   }
 
-  case class PackageWithDeps(name: String, version: String, dependenciesFetched: Boolean, dependencies: Set[PackageWithDeps] = Set.empty) {
+  case class PackageWithDeps(
+      name: String,
+      version: String,
+      dependenciesFetched: Boolean,
+      dependencies: Set[PackageWithDeps] = Set.empty) {
     def toPackageVersion: PackageVersion = {
       PackageVersion(this.name, this.version)
     }

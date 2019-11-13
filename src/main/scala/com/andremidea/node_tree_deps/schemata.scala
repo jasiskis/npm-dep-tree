@@ -14,24 +14,25 @@ object schemata {
    as documented on https://github.com/npm/registry/blob/master/docs/REGISTRY-API.md#version
    */
   @ConfiguredJsonCodec
-  case class RegistryPackageVersion(name: String,
-                                    description: String,
-                                    version: String,
-                                    homepage: String,
-                                    repository: VersionRepository,
-                                    dependencies: Map[String, String] = Map.empty,
-                                    devDependencies: Map[String, String] = Map.empty,
-                                    scripts: Map[String, String] = Map.empty,
-                                    author: Option[VersionAuthor] = None,
-                                    license: String,
-                                    @JsonKey("_id") id: String,
-                                    dist: VersionDist,
-                                    @JsonKey("_npmVersion") npmVersion: String,
-                                    @JsonKey("_npmUser") npmUser: VersionNpmUser,
-                                    maintainers: Seq[VersionAuthor] = Seq.empty)
+  case class RegistryPackageVersion(
+      name: String,
+      description: String,
+      version: String,
+      homepage: String,
+      repository: VersionRepository,
+      dependencies: Map[String, String] = Map.empty,
+      devDependencies: Map[String, String] = Map.empty,
+      scripts: Map[String, String] = Map.empty,
+      author: Option[VersionAuthor] = None,
+      license: Option[String] = None,
+      @JsonKey("_id") id: String,
+      dist: VersionDist,
+      @JsonKey("_npmVersion") npmVersion: String,
+      @JsonKey("_npmUser") npmUser: VersionNpmUser,
+      maintainers: Seq[VersionAuthor] = Seq.empty)
 
   @ConfiguredJsonCodec
-  case class VersionRepository(url: String, @JsonKey("type") repoType: String)
+  case class VersionRepository(url: String, @JsonKey("type") repoType: Option[String] = None)
 
   @ConfiguredJsonCodec
   case class VersionAuthor(name: String, email: Option[String], url: Option[String] = None)

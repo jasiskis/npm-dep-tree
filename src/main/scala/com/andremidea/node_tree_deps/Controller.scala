@@ -10,19 +10,21 @@ import com.typesafe.scalalogging.LazyLogging
 
 object Controller extends LazyLogging {
 
-  def getDependencyTree(name: String,
-                        version: String,
-                        storage: GraphStore[PackageVersion],
-                        packageRepository: PackageRepository,
-                        httpOut: HttpOut): DependencyNode = {
+  def getDependencyTree(
+      name: String,
+      version: String,
+      storage: GraphStore[PackageVersion],
+      packageRepository: PackageRepository,
+      httpOut: HttpOut): DependencyNode = {
     val pack = PackageVersion(name, version)
     Adapters.toWire(fetchDepencencyTree(pack, storage, packageRepository, httpOut))
   }
 
-  def fetchDepencencyTree(pack: PackageVersion,
-                          storage: GraphStore[PackageVersion],
-                          packageRepository: PackageRepository,
-                          httpOut: HttpOut): PackageWithDeps = {
+  def fetchDepencencyTree(
+      pack: PackageVersion,
+      storage: GraphStore[PackageVersion],
+      packageRepository: PackageRepository,
+      httpOut: HttpOut): PackageWithDeps = {
 
     val cachedPackage = packageRepository.retrieveConnectedPackages(pack)
     logger.debug(s"retrieved package ${pack} from repository ${cachedPackage}")
@@ -47,9 +49,10 @@ object Controller extends LazyLogging {
     }
   }
 
-  def upsertPackage(packWithDeps: PackageWithDeps,
-                    storage: GraphStore[PackageVersion],
-                    httpOut: HttpOut): PackageWithDeps = {
+  def upsertPackage(
+      packWithDeps: PackageWithDeps,
+      storage: GraphStore[PackageVersion],
+      httpOut: HttpOut): PackageWithDeps = {
     val pack = fetchHttp(packWithDeps.name, packWithDeps.version, httpOut)
     if (packWithDeps.version == "latest")
       // insert duplicated to work around "caching" when searching for a non
