@@ -4,9 +4,8 @@ import cats.data.EitherT
 import com.andremidea.node_tree_deps.components.HttpOut
 import com.andremidea.node_tree_deps.components.graph.{GraphStore, PackageRepository}
 import com.andremidea.node_tree_deps.models.{PackageVersion, PackageWithDeps}
-import com.andremidea.node_tree_deps.schemata._
-import io.catbird.util._
 import com.twitter.util.Future
+import io.catbird.util._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -16,28 +15,7 @@ class ControllerTest extends FlatSpec with Matchers with MockFactory {
     val httpOut = mock[HttpOut]
     val storage = mock[GraphStore[PackageVersion]]
 
-    val response = RegistryPackageVersion(
-      "express",
-      "Fast, unopinionated, minimalist web framework",
-      "4.17.1",
-      "http://expressjs.com/",
-      VersionRepository("git+https://github.com/expressjs/express.git", "git"),
-      Map(
-        "body-parser" -> "1.19.0",
-        "etag"        -> "~1.8.1",
-      ),
-      Map.empty,
-      Map.empty,
-      Some(VersionAuthor("TJ Holowaychuk", Some("tj@vision-media.ca"), None)),
-      "MIT",
-      "express@4.17.1",
-      VersionDist(
-        "4491fc38605cf51f8629d39c2b5d026f98a4c134",
-        "https://registry.npmjs.org/express/-/express-4.17.1.tgz"
-      ),
-      "6.4.1",
-      VersionNpmUser("dougwilson", "doug@somethingdoug.com")
-    )
+    val response = Fixtures.response("express", "4.17.1", Map("body-parser" -> "1.19.0", "etag" -> "1.8.1"))
 
     (httpOut.getPackage _)
       .expects("express", "4.17.1")
@@ -164,6 +142,7 @@ class ControllerTest extends FlatSpec with Matchers with MockFactory {
 
     Controller.fetchDepencencyTree(fromRequest, storage, repository, httpOut) should be(expected)
   }
+
   "fetchDependencyTree" should "fetch non-cached dependencies" in {
     val httpOut    = mock[HttpOut]
     val storage    = mock[GraphStore[PackageVersion]]
@@ -216,6 +195,71 @@ class ControllerTest extends FlatSpec with Matchers with MockFactory {
       .expects(etag.toPackageVersion, Set.empty[PackageVersion])
 
     Controller.fetchDepencencyTree(fromRequest, storage, repository, httpOut) should be(expected)
+  }
+
+  "fetchDependencyTree" should "fetch recursive dependencies" in {
+    val httpOut    = mock[HttpOut]
+    val storage    = mock[GraphStore[PackageVersion]]
+    val repository = mock[PackageRepository]
+
+    val packageResp  = Fixtures.response("package", "0.1", Map("package2" -> "0.2"))
+    val package2Resp = Fixtures.response("package2", "0.2", Map("package3" -> "0.3"))
+    val package3Resp = Fixtures.response("package3", "0.3", Map.empty)
+
+    val pack = PackageVersion("package", "0.1")
+    // retrieving package
+    (repository.retrieveConnectedPackages _)
+      .expects(pack)
+      .returning(None)
+
+    // fetching package
+    (httpOut.getPackage _)
+      .expects("package", "0.1")
+      .returning(EitherT.right(Future(packageResp)))
+
+    // upserting package into cache
+    (storage.upsert _)
+      .expects(PackageVersion("package", "0.1"), Set(PackageVersion("package2", "0.2")))
+
+    // retrieving package2
+    val package2 = PackageVersion("package2", "0.2")
+    (repository.retrieveConnectedPackages _)
+      .expects(package2)
+      .returning(Some(package2.toWithDeps(false)))
+
+    // fetching package2
+    (httpOut.getPackage _)
+      .expects("package2", "0.2")
+      .returning(EitherT.right(Future(package2Resp)))
+
+    // upserting package2 into cache
+    (storage.upsert _)
+      .expects(package2, Set(PackageVersion("package3", "0.3")))
+
+    // retrieving package3
+    val package3 = PackageVersion("package3", "0.3")
+    (repository.retrieveConnectedPackages _)
+      .expects(package3)
+      .returning(Some(package3.toWithDeps(false)))
+
+    // fetching package3
+    (httpOut.getPackage _)
+      .expects("package3", "0.3")
+      .returning(EitherT.right(Future(package3Resp)))
+
+    // upserting package3 into cache
+    (storage.upsert _)
+      .expects(package3, Set.empty[PackageVersion])
+
+    val expected = pack
+      .toWithDeps(true)
+      .copy(
+        dependencies = Set(
+          package2
+            .toWithDeps(true)
+            .copy(dependencies = Set(package3.toWithDeps(true)))))
+
+    Controller.fetchDepencencyTree(pack, storage, repository, httpOut) should be(expected)
   }
 
 }

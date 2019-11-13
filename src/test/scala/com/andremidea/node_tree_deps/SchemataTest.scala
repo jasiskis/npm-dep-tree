@@ -196,7 +196,6 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
       List(VersionAuthor("dougwilson", Some("doug@somethingdoug.com"), None))
     )
     val result: Result[RegistryPackageVersion] = readTestFixture("get-body-parser-latest").as[RegistryPackageVersion]
-    pprint.pprintln(result)
 
     result.right.value should be(expected)
   }
