@@ -6,20 +6,24 @@ import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.GraphPredef._
 import scalax.collection.mutable.Graph
 
-case class InMemoryGraph() extends GraphQuery with GraphStore[PackageVersion] {
+case class InMemoryGraph() extends PackageRepository with GraphStore[PackageVersion] {
 
-  private val graph: Graph[PackageVersion, DiEdge] = Graph.empty
+  // The var is to allow non-key contents in the node that can be updated
+  private case class Node(content: PackageVersion)(var dependenciesFetched: Boolean)
 
-  override def retrieveConnectedNodes(node: PackageVersion): Option[PackageWithDeps] = {
+  private val graph: Graph[Node, DiEdge] = Graph.empty
+
+  override def retrieveConnectedPackages(key: PackageVersion): Option[PackageWithDeps] = {
+    val node = Node(key)(false)
     graph.find(node).map { n =>
       val successors: Set[graph.NodeT] = n.diSuccessors
 
       def getSuccessors(node: graph.NodeT): PackageWithDeps = {
         val nodeValue = node.value
         if (node.hasSuccessors) {
-          PackageWithDeps(nodeValue.name, nodeValue.version, node.diSuccessors.map(getSuccessors(_)))
+          PackageWithDeps(nodeValue.content.name, nodeValue.content.version, nodeValue.dependenciesFetched, node.diSuccessors.map(getSuccessors(_)))
         } else {
-          PackageWithDeps(nodeValue.name, nodeValue.version)
+          PackageWithDeps(nodeValue.content.name, nodeValue.content.version, nodeValue.dependenciesFetched)
         }
       }
 
@@ -27,14 +31,20 @@ case class InMemoryGraph() extends GraphQuery with GraphStore[PackageVersion] {
     }
   }
 
-  override def put(key: PackageVersion, connections: Set[PackageVersion]): Unit = {
-    graph += key
-    connections.foreach(c => {
-      graph += key ~> c
-    })
-  }
+  override def upsert(key: PackageVersion, connections: Set[PackageVersion]): Unit = {
+    val nodeToUpsert = Node(key)(false)
 
-  override def getShallowNode(node: PackageVersion): Option[PackageWithDeps] = {
-    graph.find(node).map( x => x.toWithDeps)
+    val existingNode: Node = graph.find(nodeToUpsert) match {
+      case Some(n) => n.value
+      case _ => {
+        graph += nodeToUpsert
+        nodeToUpsert
+      }
+    }
+
+    existingNode.dependenciesFetched = true
+    connections.foreach(c => {
+      graph += existingNode ~> Node(c)(false)
+    })
   }
 }

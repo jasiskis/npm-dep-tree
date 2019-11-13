@@ -78,7 +78,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
         "test-tap" -> "mocha --require test/support/env --reporter tap --check-leaks test/ test/acceptance/",
         "lint"     -> "eslint ."
       ),
-      Some(VersionAuthor("TJ Holowaychuk", "tj@vision-media.ca", None)),
+      Some(VersionAuthor("TJ Holowaychuk", Some("tj@vision-media.ca"), None)),
       "MIT",
       "express@4.17.1",
       VersionDist(
@@ -88,9 +88,9 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
       "6.4.1",
       VersionNpmUser("dougwilson", "doug@somethingdoug.com"),
       List(
-        VersionAuthor("dougwilson", "doug@somethingdoug.com", None),
-        VersionAuthor("jasnell", "jasnell@gmail.com", None),
-        VersionAuthor("mikeal", "mikeal.rogers@gmail.com", None)
+        VersionAuthor("dougwilson", Some("doug@somethingdoug.com"), None),
+        VersionAuthor("jasnell", Some("jasnell@gmail.com"), None),
+        VersionAuthor("mikeal", Some("mikeal.rogers@gmail.com"), None)
       )
     )
 
@@ -128,7 +128,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
         "lint"        -> "eslint --plugin markdown --ext js,md .",
         "bench"       -> "node benchmark/index.js"
       ),
-      Some(VersionAuthor("TJ Holowaychuk", "tj@vision-media.ca", Some("http://tjholowaychuk.com"))),
+      Some(VersionAuthor("TJ Holowaychuk", Some("tj@vision-media.ca"), Some("http://tjholowaychuk.com"))),
       "MIT",
       "fresh@0.5.2",
       VersionDist(
@@ -137,7 +137,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
       ),
       "3.10.10",
       VersionNpmUser("dougwilson", "doug@somethingdoug.com"),
-      List(VersionAuthor("dougwilson", "doug@somethingdoug.com", None))
+      List(VersionAuthor("dougwilson", Some("doug@somethingdoug.com"), None))
     )
     val result: Result[RegistryPackageVersion] = readTestFixture("get-fresh-052").as[RegistryPackageVersion]
 
@@ -193,7 +193,7 @@ class SchemataTest extends FlatSpec with Matchers with EitherValues {
       ),
       "6.4.1",
       VersionNpmUser("dougwilson", "doug@somethingdoug.com"),
-      List(VersionAuthor("dougwilson", "doug@somethingdoug.com", None))
+      List(VersionAuthor("dougwilson", Some("doug@somethingdoug.com"), None))
     )
     val result: Result[RegistryPackageVersion] = readTestFixture("get-body-parser-latest").as[RegistryPackageVersion]
     pprint.pprintln(result)

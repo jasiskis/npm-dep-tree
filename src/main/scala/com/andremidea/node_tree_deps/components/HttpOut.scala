@@ -34,7 +34,7 @@ case class HttpOut(httpService: Service[Request, Response]) {
           })
       parsed <- EitherT.fromEither[Future](body.as[RegistryPackageVersion])
           .leftMap(failure => {
-            new Exception("Failed to parse JSON to expected representation")
+            new Exception(s"Failed to parse JSON to expected representation: ${failure}")
           })
     } yield parsed
   }

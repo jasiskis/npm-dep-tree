@@ -7,43 +7,47 @@ class InMemoryGraphTest extends FlatSpec with Matchers with OptionValues {
 
   it should "add and retrieve a node" in {
     val inMemoryGraph = InMemoryGraph()
-    val pack = PackageVersion(name = "express", version = "latest")
+    val pack          = PackageVersion(name = "express", version = "latest")
 
-    inMemoryGraph.put(pack, Set.empty)
-    inMemoryGraph.getShallowNode(pack).value should be(pack.toWithDeps)
+    inMemoryGraph.upsert(pack, Set.empty)
+    inMemoryGraph.getShallowPackage(pack).value should be(pack.toWithDeps(true))
   }
 
   it should "retrieve dependencies of a node" in {
     val inMemoryGraph = InMemoryGraph()
-    val pack = PackageVersion(name = "express", version = "latest")
-    val deps = Set(PackageVersion(name = "foo", version = "latest"), PackageVersion(name = "bar", version = "latest"))
+    val pack          = PackageVersion(name = "express", version = "latest")
+    val deps          = Set(PackageVersion(name = "foo", version = "latest"), PackageVersion(name = "bar", version = "latest"))
 
-    inMemoryGraph.put(pack, deps)
-    inMemoryGraph.retrieveConnectedNodes(pack).value should be(PackageWithDeps(pack.name, pack.version, deps.map(_.toWithDeps)))
+    inMemoryGraph.upsert(pack, deps)
+    inMemoryGraph.retrieveConnectedPackages(pack).value should be(
+      PackageWithDeps(pack.name, pack.version, true, deps.map(_.toWithDeps(false))))
   }
 
   it should "retrieve recursive dependencies of a node" in {
     val inMemoryGraph = InMemoryGraph()
 
     val express = PackageVersion(name = "express", version = "latest")
-    val foo = PackageVersion(name = "foo", version = "latest")
-    val bar = PackageVersion(name = "bar", version = "latest")
-    val foobar = PackageVersion(name = "foobar", version = "latest")
-    val barfoo = PackageVersion(name = "barfoo", version = "latest")
+    val foo     = PackageVersion(name = "foo", version = "latest")
+    val bar     = PackageVersion(name = "bar", version = "latest")
+    val foobar  = PackageVersion(name = "foobar", version = "latest")
+    val barfoo  = PackageVersion(name = "barfoo", version = "latest")
 
     val expressDeps = Set(foo, bar)
-    val fooDeps = Set(foobar)
-    val barDeps = Set(barfoo)
+    val fooDeps     = Set(foobar)
+    val barDeps     = Set(barfoo)
 
-    inMemoryGraph.put(express, expressDeps)
-    inMemoryGraph.put(foo, fooDeps)
-    inMemoryGraph.put(bar, barDeps)
+    inMemoryGraph.upsert(express, expressDeps)
+    inMemoryGraph.upsert(foo, fooDeps)
+    inMemoryGraph.upsert(bar, barDeps)
 
-    val expected = PackageWithDeps(express.name, express.version,
-      Set(foo.toWithDeps.copy(dependencies = Set(foobar.toWithDeps)),
-        bar.toWithDeps.copy(dependencies = Set(barfoo.toWithDeps)))
+    val expected = PackageWithDeps(
+      express.name,
+      express.version,
+      true,
+      Set(foo.toWithDeps(true).copy(dependencies = Set(foobar.toWithDeps(false))),
+          bar.toWithDeps(true).copy(dependencies = Set(barfoo.toWithDeps(false))))
     )
 
-    inMemoryGraph.retrieveConnectedNodes(express).value should be(expected)
+    inMemoryGraph.retrieveConnectedPackages(express).value should be(expected)
   }
 }

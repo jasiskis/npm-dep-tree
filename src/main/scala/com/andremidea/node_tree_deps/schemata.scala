@@ -34,7 +34,7 @@ object schemata {
   case class VersionRepository(url: String, @JsonKey("type") repoType: String)
 
   @ConfiguredJsonCodec
-  case class VersionAuthor(name: String, email: String, url: Option[String] = None)
+  case class VersionAuthor(name: String, email: Option[String], url: Option[String] = None)
 
   @ConfiguredJsonCodec
   case class VersionDist(shasum: String, tarball: String)
