@@ -1,13 +1,12 @@
 package com.andremidea.node_tree_deps
 
-import cats.data.EitherT
 import com.andremidea.node_tree_deps.components.HttpOut
-import com.andremidea.node_tree_deps.components.graph.{PackageRepository, GraphStore}
+import com.andremidea.node_tree_deps.components.graph.{GraphStore, PackageRepository}
 import com.andremidea.node_tree_deps.models.{PackageVersion, PackageWithDeps}
 import com.andremidea.node_tree_deps.schemata.DependencyNode
+import com.twitter.conversions.DurationOps._
 import com.twitter.util.{Await, Future}
 import com.typesafe.scalalogging.LazyLogging
-import io.catbird.util._
 
 object Controller extends LazyLogging {
 
@@ -66,7 +65,7 @@ object Controller extends LazyLogging {
     val request: Future[Either[Exception, schemata.RegistryPackageVersion]] =
       httpOut.getPackage(name, version).value
 
-    Await.result(request) match {
+    Await.result(request, 5.seconds) match {
       case Right(response) => Adapters.fromWire(response)
       case Left(ex)        => throw ex
     }

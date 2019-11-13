@@ -19,6 +19,11 @@ object Main extends TwitterServer {
   val getTree: Endpoint[DependencyNode] =
     get("tree" :: path[String] :: path[String]) { (name: String, version: String) =>
       Ok(Controller.getDependencyTree(name, version, inMemoryGraph, inMemoryGraph, httpOut))
+    } handle {
+      case e: Exception => {
+        e.printStackTrace()
+        BadRequest(e)
+      }
     }
 
   def main(): Unit = {
