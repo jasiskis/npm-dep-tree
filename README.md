@@ -151,7 +151,7 @@ or
 
 ### Design
 
-The service is designed around three components:
+The service is designed around the following components:
 
 - `GraphStore` -> which is responsible for storing the already fetched packages
 - `PackageRepository` -> a query mechanism on top of the `GraphStore`
@@ -166,8 +166,8 @@ un-fetched dependencies.
 
 
 ### Finagle and Flint
-As the fetching the dependency tree is a process that takes some time and involves many request
-i choose tho use Finagle as http client, and flint as the http server (which is based on top of finagle).
+As the fetching the dependency tree is a process that takes some time and involves many external interactions
+I decided to use Finagle as the http-client, and flint as the http-server (which is based on top of finagle).
 
 Given its async nature, it would fit this application well as it would benefit of 
 fetching the dependencies async and in parallel. 
