@@ -10,7 +10,7 @@ class InMemoryGraphTest extends FlatSpec with Matchers with OptionValues {
     val pack          = PackageVersion(name = "express", version = "latest")
 
     inMemoryGraph.upsert(pack, Set.empty)
-    inMemoryGraph.getShallowPackage(pack).value should be(pack.toWithDeps(true))
+    inMemoryGraph.retrieveConnectedPackages(pack).value should be(pack.toWithDeps(true))
   }
 
   it should "retrieve dependencies of a node" in {
