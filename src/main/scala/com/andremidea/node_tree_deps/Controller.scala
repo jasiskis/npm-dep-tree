@@ -25,19 +25,24 @@ object Controller extends LazyLogging {
                                   packageRepository: PackageRepository,
                                   httpOut: HttpOut): PackageWithDeps = {
 
-    val withDeps = packageRepository.retrieveConnectedPackages(pack)
-    logger.debug(s"retrieved package ${pack} from repository ${withDeps}")
+    val cachedPackage = packageRepository.retrieveConnectedPackages(pack)
+    logger.debug(s"retrieved package ${pack} from repository ${cachedPackage}")
 
-    withDeps match {
-      case Some(x) if x.allDependenciesFetched => x
-      case _ => {
-        val fetched = fetch(pack.toWithDeps(false), storage, httpOut)
-        val fetchedDependencies = fetched.dependencies
+    cachedPackage match {
+      case Some(cached) if cached.downstreamDependenciesFetched => cached
+      case Some(cached) if cached.dependenciesFetched => {
+        val fetchedDependencies = cached.dependencies
           .map(
             dep =>
-              if (dep.allDependenciesFetched) dep
+              if (dep.downstreamDependenciesFetched) dep
               else fetchDepencencyTree(dep.toPackageVersion, storage, packageRepository, httpOut))
 
+        cached.copy(dependencies = fetchedDependencies)
+      }
+      case _ => {
+        val fetched = fetch(pack.toWithDeps(false), storage, httpOut)
+        val fetchedDependencies = fetched.dependencies.map(dep =>
+          fetchDepencencyTree(dep.toPackageVersion, storage, packageRepository, httpOut))
         fetched.copy(dependencies = fetchedDependencies)
       }
     }

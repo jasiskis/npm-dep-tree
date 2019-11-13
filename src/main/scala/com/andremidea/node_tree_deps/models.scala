@@ -17,8 +17,8 @@ object models {
       PackageVersion(this.name, this.version)
     }
 
-    def allDependenciesFetched: Boolean = {
-      dependenciesFetched && dependencies.forall(_.allDependenciesFetched)
+    def downstreamDependenciesFetched: Boolean = {
+      dependenciesFetched && dependencies.forall(_.downstreamDependenciesFetched)
     }
 
   }

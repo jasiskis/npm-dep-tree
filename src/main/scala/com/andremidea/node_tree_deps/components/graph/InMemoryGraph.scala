@@ -24,7 +24,7 @@ case class InMemoryGraph() extends PackageRepository with GraphStore[PackageVers
           PackageWithDeps(nodeValue.content.name, nodeValue.content.version, nodeValue.dependenciesFetched)
         }
       }
-
+      
       getSuccessors(n)
     }
   }
