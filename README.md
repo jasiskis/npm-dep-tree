@@ -1,9 +1,11 @@
 # NPM dependency tree
 
+The goal of this service is to create an service that fetches the dependency tree of a given dependency. It traverses the graph of dependencies, caches and returns metadata needed to present the dependency tree through a CLI.
+
 ## Usage
 
 Running the service:
-`sbt run` 
+`sbt run`
 
 Getting the dependency tree of a package:
 ```bash
@@ -161,7 +163,7 @@ The service is designed around three components:
 A `node` in the Graph is represented by `PackageVersion` which its dependencies are fetched and cached or not.
 
 Whenever a incoming request hits the service, it checks in the `GraphStore` for the directed graph of the requested node.
-If all the downstream dependencies are already fetched it returns the graph, otherwise it fetches in an eagerly manner all the 
+If all the downstream dependencies are already fetched it returns the graph, otherwise it fetches in an eagerly manner all the
 un-fetched dependencies.
 
 
@@ -169,10 +171,10 @@ un-fetched dependencies.
 As the fetching the dependency tree is a process that takes some time and involves many request
 i choose tho use Finagle as http client, and flint as the http server (which is based on top of finagle).
 
-Given its async nature, it would fit this application well as it would benefit of 
-fetching the dependencies async and in parallel. 
+Given its async nature, it would fit this application well as it would benefit of
+fetching the dependencies async and in parallel.
 
-Unfortunately given the time constraint, I eagerly evaluated finagle's `Future` in the  `Controller.fetchHttp` method. 
+Unfortunately given the time constraint, I eagerly evaluated finagle's `Future` in the  `Controller.fetchHttp` method.
 
 
 ### Further development
@@ -182,4 +184,3 @@ Unfortunately given the time constraint, I eagerly evaluated finagle's `Future` 
 - [ ] Add retry logic to the `HttpOut` in case of retriable errors.
 - [ ] Improve relative versions, possibly fetching all versions from a package and deciding the best one
 - [ ] Expire `latest` nodes, as new versions might be available
-

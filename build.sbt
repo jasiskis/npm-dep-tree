@@ -9,7 +9,7 @@ addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.fu
 
 lazy val root = (project in file("."))
   .settings(
-    name := "snyk-dep-tree-challenge",
+    name := "npm-dep-tree",
     libraryDependencies := Seq(scalaTest % Test,
       finchCirce,
       circeParser,
